@@ -173,7 +173,6 @@ def node():
     t_0 = rospy.get_time()
 
     ig_changer = 0
-
     rospy.loginfo(rospy.get_name() + ": Initialized.")
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

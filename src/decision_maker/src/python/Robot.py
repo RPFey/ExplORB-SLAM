@@ -43,7 +43,7 @@ class Robot:
         self.global_frame = rospy.get_param('~global_frame', 'map')
         self.robot_frame = rospy.get_param('~robot_frame', 'base_footprint')
         self.listener = tf.TransformListener()
-        self.listener.waitForTransform(self.global_frame, self.robot_frame, rospy.Time(0), rospy.Duration(5))
+        # self.listener.waitForTransform(self.global_frame, self.robot_frame, rospy.Time(0), rospy.Duration(5))
         cond = 0
         while cond == 0:
             try:

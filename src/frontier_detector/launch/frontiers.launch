@@ -6,7 +6,7 @@
 
     <!-- ROS parameters -->
     <param name="namespace_init_count"  value="1"/>
-    <param name="use_sim_time"          value="true" />
+    <param name="use_sim_time"          value="false" />
 
     <!-- Inherited args -->
     <arg name="map_topic_name"  default="/gridmapper/rectified_map"/>

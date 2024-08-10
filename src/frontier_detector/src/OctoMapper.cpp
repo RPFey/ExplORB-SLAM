@@ -79,6 +79,8 @@ void OctoMapper::Init () {
     tfBuffer.reset(new tf2_ros::Buffer);
     tfListener.reset(new tf2_ros::TransformListener(*tfBuffer));
 
+    ROS_INFO("%s : TF Initialized successfully.", name_of_node_.c_str());
+
     // Enable publishing OctoMap
     octomap_publisher_ = node_handle_.advertise<octomap_msgs::Octomap>(name_of_node_+"/octomap", 3);
 
@@ -89,7 +91,7 @@ void OctoMapper::Init () {
 
     // Services
     //octoGetter_server_ = node_handle_.advertiseService(name_of_node_+"/get_octomap", &OctoMapper::GetOctomapSrv, this);
-
+    ROS_INFO("%s : Publisher Initialized successfully.", name_of_node_.c_str());
     getTfTransformMatrix(T_optical_target_, "camera_link_optical", target_frame_id_param_);
 
     ROS_INFO("%s : Initialized successfully.", name_of_node_.c_str());
@@ -250,15 +252,17 @@ void OctoMapper::PublishOctoMap () {
 bool OctoMapper::getTfTransformMatrix(Eigen::Affine3d& transform_matrix, const std::string source_frame, const std::string target_frame) {
 
     try {
-        geometry_msgs::TransformStamped transform_to_robot = tfBuffer->lookupTransform(target_frame, source_frame,ros::Time::now(),ros::Duration(0.05));
+        ROS_INFO("octomapper Looking for transform from %s to %s.", source_frame.c_str(), target_frame.c_str());
+        geometry_msgs::TransformStamped transform_to_robot = tfBuffer->lookupTransform(target_frame, source_frame, ros::Time::now(), ros::Duration(0.05));
+        ROS_INFO("m");
 
         transform_matrix = tf2::transformToEigen(transform_to_robot);
         return true;
     }
     catch (tf2::TransformException &ex) {
-        ROS_WARN("%s",ex.what());
+        ROS_WARN("octomapper Could not get transform from %s to %s.", source_frame.c_str(), target_frame.c_str());
         return false;
-    }
+    } 
 
 }
 

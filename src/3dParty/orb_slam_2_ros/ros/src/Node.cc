@@ -119,11 +119,20 @@ void Node::LoadOrbParameters (ORB_SLAM2::ORBParameters& parameters) {
                 node_handle_.getParam(name_of_node_ + "/camera_bf", parameters.baseline);
             }
 
-            parameters.k1 = camera_info->D[0];
-            parameters.k2 = camera_info->D[1];
-            parameters.p1 = camera_info->D[2];
-            parameters.p2 = camera_info->D[3];
-            parameters.k3 = camera_info->D[4];
+            if(camera_info->D.size() == 5){
+                parameters.k1 = camera_info->D[0];
+                parameters.k2 = camera_info->D[1];
+                parameters.p1 = camera_info->D[2];
+                parameters.p2 = camera_info->D[3];
+                parameters.k3 = camera_info->D[4];
+            } else {
+                ROS_WARN("Camera info message does not contain 5 distortion coefficients, defaulting to launch file params.");
+                parameters.k1 = 0;
+                parameters.k2 = 0;
+                parameters.p1 = 0;
+                parameters.p2 = 0;
+                parameters.k3 = 0;
+            }
             return;
         }
     }
@@ -539,6 +548,7 @@ bool Node::getTfTransformMatrix(Eigen::Affine3d &transform_matrix, const std::st
     }
     catch (tf2::TransformException &ex){
         ROS_WARN("%s",ex.what());
+        ROS_WARN("Could not get transform from %s to %s", source_frame.c_str(), target_frame.c_str());
         return false;
     }
 }
