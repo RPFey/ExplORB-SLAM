@@ -10,6 +10,7 @@ import threading
 
 import cv2
 import habitat_sim as hs
+from habitat_sim.utils import common as utils
 import numpy as np
 import quaternion
 import rospkg
@@ -250,6 +251,7 @@ class HabitatROSNode:
             "allowed_classes": [],
             "scene_file": "",
             "initial_T_HB": [],
+            "initial_T_IC": [],
             "pose_frame_id": "habitat",
             "pose_frame_at_initial_T_HB": False,
             "visualize_semantics": False,
@@ -364,7 +366,8 @@ class HabitatROSNode:
             rospy.logfatal("Scene file " + config["scene_file"] + " does not exist")
             raise rospy.ROSException
         # Create the initial T_HB matrix
-        T = list_to_pose(config["initial_T_HB"])
+        # initialize from T_IC
+        T = self._T_IC_to_T_HB(list_to_pose(config["initial_T_IC"]))
         if T is None and config["initial_T_HB"]:
             rospy.logerr("Invalid initial T_HB. Expected list of 3, 4, 7 or 16 elements")
         config["initial_T_HB"] = T
@@ -449,6 +452,8 @@ class HabitatROSNode:
         rgb_sensor_spec.near = 0.00001
         rgb_sensor_spec.far = 1000
         rgb_sensor_spec.hfov = f_to_hfov(config["f"], config["width"])
+
+        # default height is 1.5
         # rgb_sensor_spec.position = np.zeros((3, 1))
         # rgb_sensor_spec.orientation = np.zeros((3, 1))
         return rgb_sensor_spec
@@ -465,7 +470,6 @@ class HabitatROSNode:
         depth_sensor_spec.near = config["near_plane"]
         depth_sensor_spec.far = config["far_plane"]
         depth_sensor_spec.hfov = f_to_hfov(config["f"], config["width"])
-        # depth_sensor_spec.position = np.zeros((3, 1))
         # depth_sensor_spec.orientation = np.zeros((3, 1))
         # if config["depth_noise"]:
         #     depth_sensor_spec.noise_model = "RedwoodDepthNoiseModel"
@@ -705,23 +709,48 @@ class HabitatROSNode:
 
         H_temp = np.eye(4)
         timestep = 1.0 / config["fps"]
-        # import pdb; pdb.set_trace()
-        # compute transform
-        if abs(angular) < 1e-6:
-            # Linear motion
-            H_temp[0, 3] = (linear * timestep)
-        else:
-            radius = linear / angular
-            angle = angular * timestep
+        
+        # # compute transform
+        # if abs(angular) < 1e-6:
+        #     # Linear motion
+        #     H_temp[0, 3] = (linear * timestep)
+        # else:
+        #     radius = linear / angular
+        #     angle = angular * timestep
             
-            H_temp[0, 3] = radius * (math.sin(angle) - math.sin(0))
-            H_temp[1, 3] = radius * (-math.cos(angle) + math.cos(0))
+        #     H_temp[0, 3] = radius * (math.sin(angle) - math.sin(0))
+        #     H_temp[1, 3] = radius * (-math.cos(angle) + math.cos(0))
 
-            q = quaternion.from_euler_angles(0, 0, angle)
-            H_temp[0:3, 0:3] = quaternion.as_rotation_matrix(q)
+        #     q = quaternion.from_euler_angles(0, 0, angle)
+        #     H_temp[0:3, 0:3] = quaternion.as_rotation_matrix(q)
+        
+        # # set T_HB
+        # T_HB_next = T_HB @ H_temp
 
-        # set T_HB
-        T_HB_next = T_HB @ H_temp
+        # use velocity command
+        vel_control = hs.physics.VelocityControl()
+        vel_control.linear_velocity = np.array([0, 0, -linear])
+        vel_control.angular_velocity = np.array([0, angular, 0])
+        vel_control.controlling_lin_vel = True
+        vel_control.controlling_ang_vel = True
+        vel_control.lin_vel_is_local = True
+        vel_control.ang_vel_is_local = True
+
+        agent_state = sim.get_agent(0).get_state()
+        previous_rigid_state = hs.RigidState(
+                    utils.quat_to_magnum(agent_state.rotation), agent_state.position
+                )
+        target_rigid_state = vel_control.integrate_transform(
+                    timestep, previous_rigid_state
+                )
+        end_pos = sim.step_filter(
+                    previous_rigid_state.translation, target_rigid_state.translation
+                )
+        
+        agent_state.position = end_pos
+        agent_state.rotation = utils.quat_from_magnum(target_rigid_state.rotation)
+        T_HB_next = self._T_IC_to_T_HB(combine_pose(agent_state.position, agent_state.rotation))
+
         odom_HB = np.linalg.inv(self.init_HB) @ T_HB_next
         self.T_HB_mutex.acquire()
         self.T_HB = T_HB_next
