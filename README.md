@@ -35,45 +35,79 @@ Detected dependencies:
 Building
 ------------
 1. Clone repo:
-```
+```bash
 git clone https://github.com/JulioPlaced/ExplORBSLAM.git
+
+# install dependency
+sudo apt install -y ros-noetic-turtlebot3-teleop \
+          ros-noetic-move-base \
+         ros-noetic-octomap-rviz-plugins \
+         ros-noetic-kobuki-msgs \
+         ros-noetic-octomap \
+         ros-noetic-octomap-ros \
+         ros-noetic-teb-local-planner 
 ```
 
+Build the habitat simulator using python>=3.9
+
 2. Build repo:
-```
+```bash
 cd ExplORBSLAM/
-catkin b
+catkin build
 ```
 
 3. Remember to source the ExplORBSLAM workspace:
 
-  ```
-  source devel/setup.bash
-  ```
+```bash
+source devel/setup.bash
+```
 
-  If sourcing doesn't work properly, try
+If sourcing doesn't work properly, try
 
-  ```
-  catkin config --no-install
-  catkin clean --all
-  ```
+```bash
+catkin config --no-install
+catkin clean --all
+```
 
-  and rebuild.
+and rebuild.
+
+Issues
+------------
+
+Some issues with using habitat. One problem is the `libffi.7.so` library for python>=3.9 (under `miniconda3/env/habitat/lib`) will point to `libffi.so.8`. This will cause issue.
+
+The solution is to point it back to version 7, using the library in `/lib/x86_64-linux-gnu/libffi.so.7.1.0.` The directory looks like this:
+
+```plaintext
+libffi.7.so -> /lib/x86_64-linux-gnu/libffi.so.7.1.0
+libffi.8.so -> libffi.so.8.1.2
+libffi.a
+libffi.so -> /lib/x86_64-linux-gnu/libffi.so.7.1.0
+libffi.so.7 -> /lib/x86_64-linux-gnu/libffi.so.7.1.0
+libffi.so.8 -> libffi.so.8.1.2
+libffi.so.8.1.2
+````
+
+
 
 Running
 ------------
 1. Launch the scenario:
 
-  AWS house environment:
-  ```
-  roslaunch robot_description single_house.launch
-  ```
-  Or AWS bookstore environment:
-  ```
-  roslaunch robot_description single_bookstore.launch
-  ```
+AWS house environment:
+```bash
+roslaunch robot_description single_house.launch
+```
+Or AWS bookstore environment:
+```bash
+roslaunch robot_description single_bookstore.launch
+```
+Or Habitat Simulator 
+```bash
+roslaunch robot_description single_habitat.launch
+```
 
 2. Launch the decision maker
-  ```
-  roslaunch decision_maker autonomous_agent.launch
-  ```
+```bash
+roslaunch decision_maker autonomous_agent.launch
+```
