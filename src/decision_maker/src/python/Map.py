@@ -203,7 +203,7 @@ class Map:
                 t = self.Tcw[i_dict].translation()
                 r = Rotation.from_matrix(self.Tcw[i_dict].rotationMatrix())
                 pose = [t, r.as_quat()]  # x, y, z, w
-                nodes.append(np.concatenate([np.array([i]), pose]).ravel())
+                nodes.append(np.concatenate([np.array([i]), *pose]).ravel())
 
         return nodes
 

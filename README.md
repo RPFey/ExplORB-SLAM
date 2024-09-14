@@ -48,18 +48,28 @@ sudo apt install -y ros-noetic-turtlebot3-teleop \
          ros-noetic-teb-local-planner 
 ```
 
-Build the habitat simulator using python>=3.9
+2. Build the habitat simulator using python>=3.9
 
-2. Build repo:
+```bash
+conda create -n habitat2 python=3.9
+
+# build habitat simulator v0.2.4
+#...
+
+# Install other packages
+python -m pip install sophuspy scikit-learn nptyping
+```
+
+3. Build repo:
 ```bash
 cd ExplORBSLAM/
 catkin build
 ```
 
-3. Remember to source the ExplORBSLAM workspace:
+4. Source bash file
 
 ```bash
-source devel/setup.bash
+source python_setup.sh
 ```
 
 If sourcing doesn't work properly, try

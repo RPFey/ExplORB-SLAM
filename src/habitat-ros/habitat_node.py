@@ -334,7 +334,8 @@ class HabitatROSNode:
         self.traj_mutex.acquire()
         scene_name = self.config["scene_file"].split("/")[-1].split(".")[0]
         print("Saving trajectory to {}.txt".format(scene_name))
-        with open("/root/ExplORB-SLAM/{}.txt".format(scene_name), "w") as f:
+        dir_name = os.path.dirname(os.path.abspath(__file__))
+        with open("{}/{}.txt".format(dir_name, scene_name), "w") as f:
             for p in self.traj:
                 f.write(",".join(["{:.6f}".format(x) for x in p]) + "\n")
 
