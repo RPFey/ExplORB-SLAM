@@ -52,8 +52,9 @@ class WeightedPoseGraph:
         self.criteria = criteria
         if (nodes is not None) and (edges is not None):
             for i in range(0, len(nodes)):
-                p = nodes[i][1]  # array of pose
-                q = nodes[i][2]  # array of quaternion
+                p = nodes[i][1:4]  # array of pose
+                q = nodes[i][4:]  # array of quaternion
+                # import pdb; pdb.set_trace() 
                 self.graph.add_node(nodes[i][0], translation=p, orientation=q)  # qx, qy, qz, qw
             for i in range(0, len(edges)):
                 edge = (edges[i][0], edges[i][1])
@@ -71,9 +72,10 @@ class WeightedPoseGraph:
                     print("WeightedPoseGraph Class: Optimality criteria not recognized.")
         elif nodes is not None:
             print("WeightedPoseGraph Class: Edges initialized to None.")
+            # import pdb; pdb.set_trace()
             for i in range(0, np.size(nodes, 0)):
-                p = nodes[i][1]
-                q = nodes[i][2]
+                p = nodes[i][1:4]
+                q = nodes[i][4:]
                 self.graph.add_node(nodes[i][0], translation=p, orientation=q)  # qx, qy, qz, qw
         elif edges is not None:
             print("WeightedPoseGraph Class: Nodes initialized to None.")
@@ -336,6 +338,9 @@ class WeightedPoseGraph:
 
             if i in all_t:
                 t = all_t[i]
+                if isinstance(t, float):
+                    continue 
+
                 try:
                     vertex_marker.pose.position.x = t[0]
                     vertex_marker.pose.position.y = t[1]
