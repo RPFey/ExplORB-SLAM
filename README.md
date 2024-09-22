@@ -121,3 +121,9 @@ roslaunch robot_description single_habitat.launch
 ```bash
 roslaunch decision_maker autonomous_agent.launch
 ```
+
+3. Save the Trajectory
+```bash
+# in format x,y,z,qw,qx,qy,qz
+rosservice call /save_traj "{}"
+```
