@@ -32,6 +32,22 @@ Detected dependencies:
   * octomap_rviz_plugins
   * move_base
 
+Docker Image
+------------
+```bash
+docker run -it --runtime=nvidia \
+		-e QT_X11_NO_MITSHM=1  \
+		-e NVIDIA_VISIBLE_DEVICES=all \
+		-e NVIDIA_DRIVER_CAPABILITIES=all  \
+		--cpus=16 --memory=32g --shm-size=8g \
+		-v /path/to/host:/root \
+		--cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
+		-p 4161:80 -p 4162:5900 -p 4163:22 \
+		-e VNC_PASSWORD=rtx4090 -e HTTP_PASSWORD=rtx4090 \
+		boshuuu/vnc-cuda:cuda-12.1-devel-ubuntu20.04-gl-ros-noetic
+```
+
+
 Building
 ------------
 1. Clone repo:
@@ -52,9 +68,12 @@ sudo apt install -y ros-noetic-turtlebot3-teleop \
 
 ```bash
 conda create -n habitat2 python=3.9
+conda activate habitat2
 
 # build habitat simulator v0.2.4
-#...
+mkdir habitat && cd habitat
+git clone https://github.com/facebookresearch/habitat-sim.git && cd habitat-sim
+git checkout v0.2.4 && python setup.py install --with-cuda
 
 # Install other packages
 python -m pip install sophuspy scikit-learn nptyping
@@ -98,7 +117,11 @@ libffi.so.8 -> libffi.so.8.1.2
 libffi.so.8.1.2
 ````
 
+Another issue is the cv bridge. The solution is to upgrade it.
 
+```bash
+python -m pip install cv-bridge==1.13.0
+```
 
 Running
 ------------

@@ -16,7 +16,8 @@ habitat:
     allowed_classes: []
 
     # Scene settings
-    scene_file: "/root/habitat_data/scene_datasets/gibson/Eudora.glb"
+    scene_file: "/root/habitat-api/data/scene_datasets/mp3d/QKGMrurUVbk/QKGMrurUVbk.glb"
+    # scene_file: "/root/habitat_data/scene_datasets/gibson/Eudora.glb"
     #scene_file: "~/Documents/Datasets/Matterport3D/v1/tasks/mp3d_habitat/mp3d/1LXtFkjw3qL/1LXtFkjw3qL.glb"
     #scene_file: "~/Documents/Datasets/Matterport3D/v1/tasks/mp3d_habitat/mp3d/2t7WUuJeko7/2t7WUuJeko7.glb"
     #scene_file: "~/Documents/Datasets/Replica/office_0/habitat/mesh_semantic.ply"
@@ -40,9 +41,11 @@ habitat:
     # 1.0433921,   0.13989654, -0.13757098, 0, 2.45858027483337e-05, 0, 1
     # Denmark
     #  -2.6772623,   0.1698854,  -0.52713704, 0, 1, 0, 2.45858027483337e-05
+    # QKGMrurUVbk
+    # -7.66829634, 0.00054007, -3.09783268,0, 0.08718023, 0, 0.99619257
 
     initial_T_IC: [ 
-        -3.8926244,   0.16554423,  0.9906624, 0, 2.45858027483337e-05, 0, 1
+        -7.66829634, 0.00054007, -3.09783268,0.00000000,0.08718023,0.00000000,0.99619257
     ]
     pose_frame_id: "habitat"
     pose_frame_at_initial_T_HB: false

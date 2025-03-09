@@ -14,7 +14,7 @@ import warnings
 import rospy
 import networkx as nx
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from operator import itemgetter
 from nptyping import ndarray

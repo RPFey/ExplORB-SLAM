@@ -67,5 +67,5 @@ void RGBDNode::ImageCallback (const sensor_msgs::ImageConstPtr& msgRGB, const se
 //    cv::imwrite( "/home/julio/source/ExplORBSLAM/depth.png",  cv_ptrD->image );
     orb_slam_->TrackRGBD(cv_ptrRGB->image,cv_ptrD->image,cv_ptrRGB->header.stamp.toSec());
 
-  Update ();
+  Update();
 }

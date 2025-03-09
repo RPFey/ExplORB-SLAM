@@ -291,6 +291,7 @@ class HabitatROSNode:
         self.odom_pose = np.array([0, 0, 0])
         self.cmd_vel = np.array([0., 0])
         self.odom_vel = np.array([0, 0])
+        self.cam_base = None
 
         self.linear_noise = 1e-4
         self.angular_noise = 1e-4
@@ -324,8 +325,29 @@ class HabitatROSNode:
                 agent = self.sim.get_agent(0)
                 t_IC = agent.get_state().position
                 q_IC = agent.get_state().rotation
+                
+                # get orb estimation
+                # query transfrom from basefoot_print to map from tf2
+                try:
+                    # Lookup the latest available transform
+                    transform = self.tf_buffer.lookup_transform("map", "camera_link_optical", rospy.Time(0))
+                     # convert to x, y, z, qx, qy, qz, qw
+                    t_eIC = np.array([transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z])
+                    q_eIC = quaternion.quaternion(transform.transform.rotation.w, transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z)
 
-                self.traj.append([t_IC[0], t_IC[1], t_IC[2], q_IC.w, q_IC.x, q_IC.y, q_IC.z])
+                    # convert to 4x4 matrix
+                    T_eIC = combine_pose(t_eIC, q_eIC)
+                    if self.cam_base is None:
+                        self.cam_base = T_eIC
+                    
+                    # get relative pose
+                    rel_cam = np.linalg.inv(self.cam_base) @ T_eIC
+                    rel_cam_trans, rel_cam_rot = split_pose(rel_cam)
+
+                    self.traj.append([t_IC[0], t_IC[1], t_IC[2], q_IC.w, q_IC.x, q_IC.y, q_IC.z, rel_cam_trans[0], rel_cam_trans[1], rel_cam_trans[2], rel_cam_rot.w, rel_cam_rot.x, rel_cam_rot.y, rel_cam_rot.z])
+                except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+                    rospy.logerr(f"Transform lookup failed: {e}")
+                    
                 self.traj_mutex.release()
 
     def _save_traj_callback(self, req):
@@ -820,7 +842,7 @@ class HabitatROSNode:
         pub["rgb"].publish(self._rgb_to_msg(obs))
         pub["depth"].publish(self._depth_to_msg(obs))
         pub[self._rgb_topic_name + "_camera_info"].publish(self._camera_intrinsics_to_msg(config, obs))
-        pub[ self._depth_topic_name + "_camera_info"].publish(self._camera_intrinsics_to_msg(config, obs))
+        pub[self._depth_topic_name + "_camera_info"].publish(self._camera_intrinsics_to_msg(config, obs))
 
         if config["enable_semantics"] and config["instance_to_class"].size > 0:
             if config["allowed_classes"]:
